@@ -214,7 +214,7 @@ app.get('/get-mining-balance', verifyToken, checkAuth, async (req, res) => {
   if(balance >= process.env.MINNE_AMOUNT){
     res.json({ balance: balance, floatRatio: floatRatio,  fullBalanceBox: true });
   }else{
-    res.json({ balance: balance, fullBalanceBox: false });
+    res.json({ balance: balance, floatRatio: floatRatio, fullBalanceBox: false });
   }
 });
 
@@ -227,10 +227,10 @@ app.get('/get-mining-account-details', verifyToken, checkAuth, async (req, res) 
 
 async function getUserMinnedTokenBalnce(userId) {
   return new Promise((resolve, reject) => {
-    const selectQuery = `SELECT points, last_claim, next_claim_possible, mining_rate FROM token_match_reward_minne WHERE user_id = ?`;
-    pool.query(selectQuery, [userId], (error, results) => {
+  const selectQuery = `SELECT points, last_claim, next_claim_possible, mining_rate FROM token_follow_task_minne WHERE user_id = ?`;
+  pool.query(selectQuery, [userId], (error, results) => {
       if (error || results.length === 0) {
-        reject(error);
+          reject(error);
       }
 
       const { points, last_claim, next_claim_possible, mining_rate } = results[0];
@@ -243,16 +243,15 @@ async function getUserMinnedTokenBalnce(userId) {
       const elapsedTime = currentTime.getTime() - lastClaimTime.getTime();
       const proportion = Math.min(elapsedTime / totalTime, 1); // Ensure the proportion does not exceed 1
 
-      const adjustedPoints = points + ((parseFloat(process.env.MINNE_AMOUNT) - points) * proportion); // Adjust the points towards MINNE_AMOUNT based on the time proportion
-
-      if(adjustedPoints <= parseFloat(process.env.MINNE_AMOUNT)){
+      const adjustedPoints = points * proportion; // Calculate the adjusted points based on the proportion
+      if(adjustedPoints <= process.env.MINNE_AMOUNT){
         resolve(adjustedPoints);
       }else{
-        // If the calculated points exceed MINNE_AMOUNT, cap it at the MINNE_AMOUNT * mining_rate
-        resolve(parseFloat(process.env.MINNE_AMOUNT) * mining_rate);
+        resolve(parseFloat(process.env.MINNE_AMOUNT * mining_rate));
       }
-    });
+      
   });
+});
 }
 
 
