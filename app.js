@@ -222,6 +222,8 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
 app.get('/get-mining-balance', verifyToken, checkAuth, async (req, res) => {
   const userId = req.userId;
   let balance = await getUserMinnedTokenBalnce(userId);
+  let minneAmount = parseFloat(process.env.MINNE_AMOUNT);
+  let floatRatio = balance / minneAmount;
   if(balance >= process.env.MINNE_AMOUNT){
     res.json({ balance: balance, fullBalanceBox: true });
   }else{
