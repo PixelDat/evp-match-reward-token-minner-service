@@ -233,7 +233,7 @@ app.get('/get-mining-account-details', verifyToken, checkAuth, async (req, res) 
 
 async function getUserMinnedTokenBalnce(userId) {
   return new Promise((resolve, reject) => {
-  const selectQuery = `SELECT points, last_claim, next_claim_possible, mining_rate FROM token_task_minne WHERE user_id = ?`;
+  const selectQuery = `SELECT points, last_claim, next_claim_possible, mining_rate FROM token_match_reward_minne WHERE user_id = ?`;
   pool.query(selectQuery, [userId], (error, results) => {
       if (error || results.length === 0) {
           reject(error);
