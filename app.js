@@ -206,15 +206,26 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
 // });
 
 // Get user mining balance
+// app.get('/get-mining-balance', verifyToken, checkAuth, async (req, res) => {
+//   const userId = req.userId;
+//   let balance = await getUserMinnedTokenBalnce(userId);
+//   let minneAmount = parseFloat(process.env.MINNE_AMOUNT);
+//   let floatRatio = balance / minneAmount;
+//   if(balance >= process.env.MINNE_AMOUNT){
+//     res.json({ balance: balance, floatRatio: floatRatio,  fullBalanceBox: true });
+//   }else{
+//     res.json({ balance: balance, floatRatio: floatRatio, fullBalanceBox: false });
+//   }
+// });
+
+// Get user mining balance
 app.get('/get-mining-balance', verifyToken, checkAuth, async (req, res) => {
   const userId = req.userId;
   let balance = await getUserMinnedTokenBalnce(userId);
-  let minneAmount = parseFloat(process.env.MINNE_AMOUNT);
-  let floatRatio = balance / minneAmount;
   if(balance >= process.env.MINNE_AMOUNT){
-    res.json({ balance: balance, floatRatio: floatRatio,  fullBalanceBox: true });
+    res.json({ balance: balance, fullBalanceBox: true });
   }else{
-    res.json({ balance: balance, floatRatio: floatRatio, fullBalanceBox: false });
+    res.json({ balance: balance, fullBalanceBox: false });
   }
 });
 
@@ -227,7 +238,7 @@ app.get('/get-mining-account-details', verifyToken, checkAuth, async (req, res) 
 
 async function getUserMinnedTokenBalnce(userId) {
   return new Promise((resolve, reject) => {
-  const selectQuery = `SELECT points, last_claim, next_claim_possible, mining_rate FROM token_follow_task_minne WHERE user_id = ?`;
+  const selectQuery = `SELECT points, last_claim, next_claim_possible, mining_rate FROM token_task_minne WHERE user_id = ?`;
   pool.query(selectQuery, [userId], (error, results) => {
       if (error || results.length === 0) {
           reject(error);
