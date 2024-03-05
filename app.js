@@ -192,7 +192,7 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
 
 
 // Mine Match Reward 
-app.post('/minne-match-reward', verifyToken, checkAuth, async (req, res) => {
+app.post('/mine-match-reward', verifyToken, checkAuth, async (req, res) => {
     const userId = req.userId;
     const miningRateBoost = parseFloat(process.env.MINING_RATE_BOOST);
 
