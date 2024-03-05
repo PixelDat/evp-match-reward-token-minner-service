@@ -191,19 +191,20 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
 
 
 
-// Update mining rate
-// app.post('/update-mining-rate', verifyToken, checkAuth, async (req, res) => {
-//     const userId = req.userId;
-//     const miningRateBoost = parseFloat(process.env.MINING_RATE_BOOST);
+// Mine Match Reward 
+app.post('/minne-match-reward', verifyToken, checkAuth, async (req, res) => {
+    const userId = req.userId;
+    const miningRateBoost = parseFloat(process.env.MINING_RATE_BOOST);
 
-//     const updateQuery = `UPDATE token_match_reward_minne SET mining_rate = mining_rate + ? WHERE user_id = ?`;
-//     pool.query(updateQuery, [miningRateBoost, userId], (error, results) => {
-//         if (error) {
-//             return res.status(500).json({ message: 'Failed to update mining rate', error });
-//         }
-//         res.json({ message: 'Mining rate updated successfully' });
-//     });
-// });
+    const pointsToAdd = parseFloat(process.env.MINNE_AMOUNT)
+    const updateQuery = `UPDATE token_match_reward_minne SET points = ? WHERE user_id = ?`;
+    pool.query(updateQuery, [pointsToAdd, userId], (error, results) => {
+        if (error) {
+            return res.status(500).json({ message: 'Failed to update mining rate', error });
+        }
+        res.json({ message: 'Mining rate updated successfully' });
+    });
+});
 
 
 // Get user mining balance
