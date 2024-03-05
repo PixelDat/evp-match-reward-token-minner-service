@@ -202,7 +202,7 @@ app.post('/mine-match-reward', verifyToken, checkAuth, async (req, res) => {
         if (error) {
             return res.status(500).json({ message: 'Failed to update mining rate', error });
         }
-        res.json({ message: 'Mining rate updated successfully' });
+        res.json({ message: 'Token mined successfully' });
     });
 });
 
