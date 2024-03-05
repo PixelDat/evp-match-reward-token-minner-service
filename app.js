@@ -231,6 +231,36 @@ app.get('/get-mining-account-details', verifyToken, checkAuth, async (req, res) 
   res.json(userDetails);
 });
 
+// async function getUserMinnedTokenBalnce(userId) {
+//   return new Promise((resolve, reject) => {
+//   const selectQuery = `SELECT points, last_claim, next_claim_possible, mining_rate FROM token_match_reward_minne WHERE user_id = ?`;
+//   pool.query(selectQuery, [userId], (error, results) => {
+//       if (error || results.length === 0) {
+//           reject(error);
+//       }
+
+//       const { points, last_claim, next_claim_possible, mining_rate } = results[0];
+//       const currentTime = new Date();
+//       const nextClaimTime = new Date(next_claim_possible);
+//       const lastClaimTime = new Date(last_claim);
+
+//       // Calculate the proportion of the current time between the last claim and the next possible claim
+//       const totalTime = nextClaimTime.getTime() - lastClaimTime.getTime();
+//       const elapsedTime = currentTime.getTime() - lastClaimTime.getTime();
+//       const proportion = Math.min(elapsedTime / totalTime, 1); // Ensure the proportion does not exceed 1
+
+//       const adjustedPoints = points * proportion; // Calculate the adjusted points based on the proportion
+//       if(adjustedPoints <= process.env.MINNE_AMOUNT){
+//         resolve(adjustedPoints);
+//       }else{
+//         resolve(parseFloat(process.env.MINNE_AMOUNT * mining_rate));
+//       }
+      
+//   });
+// });
+// }
+
+
 async function getUserMinnedTokenBalnce(userId) {
   return new Promise((resolve, reject) => {
   const selectQuery = `SELECT points, last_claim, next_claim_possible, mining_rate FROM token_match_reward_minne WHERE user_id = ?`;
@@ -240,21 +270,7 @@ async function getUserMinnedTokenBalnce(userId) {
       }
 
       const { points, last_claim, next_claim_possible, mining_rate } = results[0];
-      const currentTime = new Date();
-      const nextClaimTime = new Date(next_claim_possible);
-      const lastClaimTime = new Date(last_claim);
-
-      // Calculate the proportion of the current time between the last claim and the next possible claim
-      const totalTime = nextClaimTime.getTime() - lastClaimTime.getTime();
-      const elapsedTime = currentTime.getTime() - lastClaimTime.getTime();
-      const proportion = Math.min(elapsedTime / totalTime, 1); // Ensure the proportion does not exceed 1
-
-      const adjustedPoints = points * proportion; // Calculate the adjusted points based on the proportion
-      if(adjustedPoints <= process.env.MINNE_AMOUNT){
-        resolve(adjustedPoints);
-      }else{
-        resolve(parseFloat(process.env.MINNE_AMOUNT * mining_rate));
-      }
+      resolve(points);
       
   });
 });
