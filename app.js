@@ -80,6 +80,37 @@ const checkAuth = async (req, res, next) => {
   }
 };
 
+const fastCheckAuth = async (req, res, next) => {
+  try {
+  const sessionId = req.sessionId;
+
+  if (!sessionId) {
+    return res.status(401).json({ message: 'Session ID is missing' });
+  }
+
+  const query = 'SELECT user_id, role, username FROM users WHERE session_id = ?';
+
+  pool.query(query, [sessionId], (error, results) => {
+    if (error) {
+      return next(error); // Pass the error to the central error handler
+    }
+
+    if (results.length > 0) {
+      const user = results[0];
+      
+      req.userId = user.user_id;
+      req.userRole = user.role; // Store user role
+      req.username = user.username;
+      next();
+    } else {
+      res.status(404).send('User not authenticated');
+    }
+  });
+} catch (error) {
+  next(error);
+}
+};
+
 // Create a new mining account
 app.post('/create-mining-account', verifyToken, checkAuth, async (req, res) => {
   const userId = req.userId;
@@ -208,7 +239,7 @@ app.post('/mine-match-reward', verifyToken, checkAuth, async (req, res) => {
 
 
 // Get user mining balance
-app.get('/get-mining-balance', verifyToken, checkAuth, async (req, res) => {
+app.get('/get-mining-balance', verifyToken, fastCheckAuth, async (req, res) => {
   const userId = req.userId;
   
   let balance = await getUserMinnedTokenBalnce(userId);
@@ -224,7 +255,7 @@ app.get('/get-mining-balance', verifyToken, checkAuth, async (req, res) => {
 });
 
 // Get user account details
-app.get('/get-mining-account-details', verifyToken, checkAuth, async (req, res) => {
+app.get('/get-mining-account-details', verifyToken, fastCheckAuth, async (req, res) => {
   const userId = req.userId;
   const userDetails = await getUserAccountDetails(userId);
   res.json(userDetails);
