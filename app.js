@@ -180,7 +180,7 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
           return res.status(400).json({ message: 'No claims left for today' });
         }
 
-        const newClaimsToday = last_claim < today ? 1 : claims_today + 1;
+        const newClaimsToday = lastClaim < today ? 1 : claims_today + 1;
         const currentDate = new Date();
         const nextClaimDate = new Date(currentDate.getTime() + nextClaimInterval * 60 * 60 * 1000); // Calculate next claim date
         const formattedNextClaimPossible = nextClaimDate.toISOString().slice(0, 19).replace('T', ' ');
