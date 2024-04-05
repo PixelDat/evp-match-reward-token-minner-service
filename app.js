@@ -60,27 +60,8 @@ const verifyToken = (req, res, next) => {
 };
 
 // Middleware to check authentication
-const checkAuth = async (req, res, next) => {
-  try {
-    const response = await axios.get(process.env.checkAuth_SERVICE_ENDPOINT, {
-      headers: {
-        Authorization: req.sessionId
-      }
-    });
-    if (response.data.isAuthenticated) {
-      req.userId = response.data.user_id;
-      req.userRole = response.data.role; // Store user role
-      req.username = response.data.username; // Store username
-      next();
-    } else {
-      return res.status(401).json({ message: 'User not authenticated' });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
 
-const fastCheckAuth = async (req, res, next) => {
+const checkAuth = async (req, res, next) => {
   try {
   const sessionId = req.sessionId;
 
@@ -239,7 +220,7 @@ app.post('/mine-match-reward', verifyToken, checkAuth, async (req, res) => {
 
 
 // Get user mining balance
-app.get('/get-mining-balance', verifyToken, fastCheckAuth, async (req, res) => {
+app.get('/get-mining-balance', verifyToken, checkAuth, async (req, res) => {
   const userId = req.userId;
   
   let balance = await getUserMinnedTokenBalnce(userId);
@@ -255,7 +236,7 @@ app.get('/get-mining-balance', verifyToken, fastCheckAuth, async (req, res) => {
 });
 
 // Get user account details
-app.get('/get-mining-account-details', verifyToken, fastCheckAuth, async (req, res) => {
+app.get('/get-mining-account-details', verifyToken, checkAuth, async (req, res) => {
   const userId = req.userId;
   const userDetails = await getUserAccountDetails(userId);
   res.json(userDetails);
