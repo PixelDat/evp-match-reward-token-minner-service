@@ -126,12 +126,6 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
   const maxDailyClaims = parseInt(process.env.MAX_DAILY_CLAIMS, 10) || 1; // Default to 1 if not specified
   const nextClaimInterval = parseInt(process.env.NEXT_CLAIM_INTERVAL || '24', 10); // Default to 24 hours if not specified
 
-  // First, check if user has enough balance to claim
-  const userBalance = await getUserMinnedTokenBalnce(userId);
-  if (userBalance < parseFloat(process.env.MINNE_AMOUNT)) {
-    return res.status(400).json({ message: 'Not Enough Balance to Claim' });
-  }
-
   pool.getConnection(async (err, connection) => {
     if (err) {
       return res.status(500).json({ message: 'Failed to get database connection', err });
@@ -150,11 +144,13 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
           return res.status(500).json({ message: 'Eligibility check failed', error });
         }
 
-        const { claims_today, last_claim } = results[0];
+        const { points, mining_rate, claims_today, last_claim } = results[0];
         
         // Convert 'today' and 'lastClaim' to UTC milliseconds for comparison
-        const todayUTCInt = new Date().getTime();
-        const lastClaimUTCInt = new Date(last_claim + 'Z').getTime(); // Ensure UTC by appending 'Z'
+        const today = new Date();
+        const todayUTCInt = today.getTime();
+        const lastClaimDate = new Date(last_claim + 'Z'); // Append 'Z' to indicate UTC time
+        const lastClaimUTCInt = lastClaimDate.getTime();
 
         const hasClaimsLeft = claims_today < maxDailyClaims || lastClaimUTCInt < todayUTCInt;
 
@@ -164,14 +160,15 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
         }
 
         const newClaimsToday = lastClaimUTCInt < todayUTCInt ? 1 : claims_today + 1;
-        const nextClaimDate = new Date(new Date().getTime() + nextClaimInterval * 60 * 60 * 1000); // Calculate next claim date
+        const currentDate = new Date();
+        const nextClaimDate = new Date(currentDate.getTime() + nextClaimInterval * 60 * 60 * 1000); // Calculate next claim date
         const formattedNextClaimPossible = nextClaimDate.toISOString().slice(0, 19).replace('T', ' ');
 
         // Adjust pointsToAdd by multiplying with the user's mining rate
         const pointsToAdd = parseFloat(process.env.MINNE_AMOUNT) * mining_rate;
 
         const addPointsQuery = `UPDATE token_match_reward_minne SET points = points + ?, claims_today = ?, last_claim = ?, next_claim_possible = ? WHERE user_id = ?`;
-        connection.query(addPointsQuery, [points + pointsToAdd, newClaimsToday, new Date().toISOString().slice(0, 19).replace('T', ' '), formattedNextClaimPossible, userId], async (error, results) => {
+        connection.query(addPointsQuery, [points + pointsToAdd, newClaimsToday, today.toISOString().slice(0, 19).replace('T', ' '), formattedNextClaimPossible, userId], async (error, results) => {
           if (error) {
             connection.rollback(() => connection.release());
             return res.status(500).json({ message: 'Updating mining balance failed', error });
@@ -200,7 +197,6 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
     });
   });
 });
-
 
 
 
