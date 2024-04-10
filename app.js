@@ -167,8 +167,8 @@ app.post('/claim-mining-balance', verifyToken, checkAuth, async (req, res) => {
         // Adjust pointsToAdd by multiplying with the user's mining rate
         const pointsToAdd = parseFloat(process.env.MINNE_AMOUNT) * mining_rate;
 
-        const addPointsQuery = `UPDATE token_match_reward_minne SET points = points + ?, claims_today = ?, last_claim = ?, next_claim_possible = ? WHERE user_id = ?`;
-        connection.query(addPointsQuery, [points + pointsToAdd, newClaimsToday, today.toISOString().slice(0, 19).replace('T', ' '), formattedNextClaimPossible, userId], async (error, results) => {
+        const addPointsQuery = `UPDATE token_match_reward_minne SET points = 0, claims_today = ?, last_claim = ?, next_claim_possible = ? WHERE user_id = ?`;
+        connection.query(addPointsQuery, [newClaimsToday, today.toISOString().slice(0, 19).replace('T', ' '), formattedNextClaimPossible, userId], async (error, results) => {
           if (error) {
             connection.rollback(() => connection.release());
             return res.status(500).json({ message: 'Updating mining balance failed', error });
