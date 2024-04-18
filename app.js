@@ -61,35 +61,49 @@ const verifyToken = (req, res, next) => {
 
 // Middleware to check authentication
 
+// Middleware to check authentication
 const checkAuth = async (req, res, next) => {
   try {
-  const sessionId = req.sessionId;
+    const sessionId = req.sessionId;
 
-  if (!sessionId) {
-    return res.status(401).json({ message: 'Session ID is missing' });
+    if (!sessionId) {
+      return res.status(401).json({ message: 'Session ID is missing' });
+    }
+
+    const query = 'SELECT user_id, role, username FROM users WHERE session_id = ?';
+
+    // Check if the query result is already cached
+    const cachedResult = userCache.get(sessionId);
+    if (cachedResult) {
+      const { user_id, role, username } = cachedResult;
+      req.userId = user_id;
+      req.userRole = role; // Store user role
+      req.username = username;
+      return next();
+    }
+
+    pool.query(query, [sessionId], (error, results) => {
+      if (error) {
+        return next(error); // Pass the error to the central error handler
+      }
+
+      if (results.length > 0) {
+        const user = results[0];
+
+        // Cache the query result with the sessionId as the key
+        userCache.set(sessionId, user);
+
+        req.userId = user.user_id;
+        req.userRole = user.role; // Store user role
+        req.username = user.username;
+        next();
+      } else {
+        res.status(404).send('User not authenticated');
+      }
+    });
+  } catch (error) {
+    next(error);
   }
-
-  const query = 'SELECT user_id, role, username FROM users WHERE session_id = ?';
-
-  pool.query(query, [sessionId], (error, results) => {
-    if (error) {
-      return next(error); // Pass the error to the central error handler
-    }
-
-    if (results.length > 0) {
-      const user = results[0];
-      
-      req.userId = user.user_id;
-      req.userRole = user.role; // Store user role
-      req.username = user.username;
-      next();
-    } else {
-      res.status(404).send('User not authenticated');
-    }
-  });
-} catch (error) {
-  next(error);
-}
 };
 
 // Create a new mining account
