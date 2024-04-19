@@ -27,7 +27,7 @@ const pool = mysql.createPool({
 });
 
 // Caching setup
-const userCache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
+const userCache = new NodeCache({ stdTTL: 300, checkperiod: 120 });
 
 // Security enhancements
 app.use(cors());
