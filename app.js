@@ -243,7 +243,7 @@ app.get('/get-mining-balance', verifyToken, checkAuth, async (req, res) => {
   if(balance >= process.env.MINNE_AMOUNT){
     res.json({ balance: Math.floor(balance), floatRatio: floatRatio, unReadyToClaimMsg:process.env.UNREADY_TO_CLAIM_MESSAGE, fullBalanceBox: true });
   }else{
-    res.json({ balance: balance, floatRatio: floatRatio, unReadyToClaimMsg:process.env.UNREADY_TO_CLAIM_MESSAGE, fullBalanceBox: false });
+    res.json({ balance: balance.toFixed(2), floatRatio: floatRatio, unReadyToClaimMsg:process.env.UNREADY_TO_CLAIM_MESSAGE, fullBalanceBox: false });
   }
 });
 
